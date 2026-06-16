@@ -1,6 +1,6 @@
 # MalGit
 
-MalGit is a Node.js CLI that generates Conventional Commit messages from staged Git changes. syahrul efendi
+MalGit is a Node.js CLI that generates Conventional Commit messages from staged Git changes. syahrul efendi hsadashdsahdgashas
 
 ## Install
 
