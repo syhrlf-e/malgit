@@ -409,3 +409,32 @@ test("describes package publish fields as package metadata", () => {
   assert.equal(classification.type, "chore");
   assert.equal(suggestion.message, "chore: update package metadata");
 });
+
+test("classifies CLI help output changes as feature", () => {
+  const parsedDiff = {
+    files: [
+      {
+        path: "src/index.js",
+        status: "modified",
+        additions: 5,
+        deletions: 1,
+        addedLines: [
+          '.usage("<command> [options]")',
+          '.helpOption("-h, --help", "Display help for command")',
+          '.showHelpAfterError("(run `malgit --help` for usage)")',
+          '"Workflow:"',
+          '"Examples:"'
+        ],
+        removedLines: ['.description("Generate commit messages from git diff")']
+      }
+    ]
+  };
+
+  const analysis = analyzeChanges(parsedDiff, DEFAULT_CONFIG);
+  const classification = classifyCommit(analysis);
+  const suggestion = generateMessage(classification, parsedDiff, "en");
+
+  assert.equal(classification.type, "feat");
+  assert.equal(classification.scope, "cli");
+  assert.equal(suggestion.message, "feat(cli): add help output");
+});

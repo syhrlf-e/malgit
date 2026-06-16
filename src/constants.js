@@ -30,6 +30,8 @@ export const DEFAULT_SCOPE_MAPPING = {
   "src/api/": "api",
   "src/utils/": "utils",
   "src/config/": "config",
+  "src/index.js": "cli",
+  "bin/": "cli",
   "tests/": "test",
   "docs/": "docs",
   ".github/workflows/": "ci"

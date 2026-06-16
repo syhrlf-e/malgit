@@ -78,6 +78,7 @@ function detectTarget(type, parsedDiff) {
   }
 
   const tokens = collectTokens(selectTargetFiles(type, files));
+  if (type === "feat" && isCliHelpChange(files)) return "help output";
   if (
     type === "feat" &&
     files.some((file) => /src\/(analyzer|classifier|generator)\//.test(file.path.toLowerCase()))
@@ -101,6 +102,16 @@ function detectTarget(type, parsedDiff) {
   if (tokens.length > 0) return tokens.slice(0, 3).join(" ");
 
   return TYPE_TARGET_FALLBACK[type] ?? "project files";
+}
+
+function isCliHelpChange(files) {
+  return files.some((file) => {
+    const path = file.path.toLowerCase();
+    const changedText = [...file.addedLines, ...file.removedLines].join(" ");
+    const isCliEntrypoint = path === "src/index.js" || path.startsWith("bin/");
+
+    return isCliEntrypoint && /\b(?:help|usage|workflow|example|examples|command|commands)\b/i.test(changedText);
+  });
 }
 
 function detectDocsTarget(files) {

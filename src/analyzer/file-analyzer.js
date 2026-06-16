@@ -4,6 +4,15 @@ import { detectScope } from "./scope-detector.js";
 const FIX_KEYWORDS = ["fix", "error", "bug", "validate", "validation", "catch", "fallback"];
 const FEAT_KEYWORDS = ["add", "create", "implement", "register", "verify", "verification"];
 const PERF_KEYWORDS = ["perf", "optimize", "cache", "memo", "lazy"];
+const CLI_HELP_PATTERNS = [
+  /\.addHelpText\b/,
+  /\.helpOption\b/,
+  /\.showHelpAfterError\b/,
+  /\.usage\b/,
+  /\bUsage:/,
+  /\bExamples?:/,
+  /\bWorkflow:/
+];
 
 export function analyzeFile(fileChange, scopeMapping) {
   const scores = createEmptyScores();
@@ -16,6 +25,7 @@ export function analyzeFile(fileChange, scopeMapping) {
   applyRatioScores(scores, fileChange);
   applyStyleFallback(scores, fileChange);
   applyCoreLogicFallback(scores, fileChange);
+  applyCliHelpFallback(scores, fileChange);
 
   return {
     path: fileChange.path,
@@ -82,6 +92,17 @@ function applyCoreLogicFallback(scores, fileChange) {
 
   if (hasMeaningfulChanges && !hasScore && isCoreLogicFile) {
     scores.feat += 3;
+  }
+}
+
+function applyCliHelpFallback(scores, fileChange) {
+  const path = fileChange.path.toLowerCase();
+  const changedText = [...fileChange.addedLines, ...fileChange.removedLines].join(" ");
+  const isCliEntrypoint = path === "src/index.js" || path.startsWith("bin/");
+
+  if (isCliEntrypoint && CLI_HELP_PATTERNS.some((pattern) => pattern.test(changedText))) {
+    scores.feat += 8;
+    scores.fix = Math.max(0, scores.fix - 3);
   }
 }
 

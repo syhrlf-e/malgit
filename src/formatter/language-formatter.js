@@ -14,6 +14,7 @@ const ID_TARGETS = {
   documentation: "dokumentasi",
   "email verification": "verifikasi email",
   feature: "fitur",
+  "help output": "output bantuan",
   "installation guide": "panduan instalasi",
   issue: "masalah",
   "package metadata": "metadata package",

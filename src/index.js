@@ -4,17 +4,51 @@ import { runConfigCommand } from "./commands/config.js";
 import { runExplainCommand } from "./commands/explain.js";
 import { runSuggestCommand } from "./commands/suggest.js";
 
+const VERSION = "0.2.0";
+
 export function createProgram() {
   const program = new Command();
 
   program
     .name("malgit")
-    .description("Generate commit messages from git diff")
-    .version("0.2.0");
+    .description("Generate Conventional Commit messages from staged Git changes")
+    .usage("<command> [options]")
+    .version(VERSION, "-V, --version", "Display version number")
+    .helpOption("-h, --help", "Display help for command")
+    .showHelpAfterError("(run `malgit --help` for usage)")
+    .addHelpText(
+      "beforeAll",
+      [
+        `MalGit v${VERSION}`,
+        "Generate Conventional Commit messages from staged Git changes.",
+        "",
+        "Workflow:",
+        "  1. Stage your changes with `git add`",
+        "  2. Review the suggestion with `malgit suggest` or `malgit explain`",
+        "  3. Commit safely with `malgit commit`",
+        ""
+      ].join("\n")
+    )
+    .addHelpText(
+      "after",
+      [
+        "",
+        "Examples:",
+        "  $ malgit suggest",
+        "  $ malgit suggest --lang id",
+        "  $ malgit explain",
+        "  $ malgit commit --dry-run",
+        "  $ malgit config set language id",
+        "",
+        "Notes:",
+        "  MalGit reads staged changes only. Run `git add <file>` first.",
+        "  `malgit commit` asks for confirmation unless `--yes` is used."
+      ].join("\n")
+    );
 
   program
     .command("suggest")
-    .description("Suggest a Conventional Commit message from staged changes")
+    .description("Generate commit message suggestions from staged changes")
     .option("--lang <language>", "Output language: en or id")
     .option("--en", "Use English output")
     .option("--id", "Use Indonesian output")
@@ -22,7 +56,7 @@ export function createProgram() {
 
   program
     .command("explain")
-    .description("Explain staged changes and score breakdown")
+    .description("Show changed files, scores, confidence, and suggested type")
     .option("--lang <language>", "Output language: en or id")
     .option("--en", "Use English output")
     .option("--id", "Use Indonesian output")
@@ -30,7 +64,7 @@ export function createProgram() {
 
   program
     .command("commit")
-    .description("Generate a commit message and run git commit")
+    .description("Generate a message, confirm it, then run git commit")
     .option("--lang <language>", "Output language: en or id")
     .option("--en", "Use English output")
     .option("--id", "Use Indonesian output")
@@ -38,7 +72,7 @@ export function createProgram() {
     .option("--dry-run", "Preview the commit command without committing")
     .action(runCommitCommand);
 
-  const config = program.command("config").description("Read or update MalGit config");
+  const config = program.command("config").description("Read or update .malgitrc");
 
   config
     .command("set <key> <value>")
