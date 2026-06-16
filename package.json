@@ -4,8 +4,13 @@
   "description": "CLI tool to generate Conventional Commit messages from git diff",
   "type": "module",
   "bin": {
-    "malgit": "./bin/malgit.js"
+    "malgit": "bin/malgit.js"
   },
+  "files": [
+    "bin/",
+    "src/",
+    "README.md"
+  ],
   "scripts": {
     "start": "node ./bin/malgit.js",
     "dev": "node ./bin/malgit.js",
