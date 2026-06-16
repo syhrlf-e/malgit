@@ -3,7 +3,7 @@ export const ACTION_BY_TYPE = {
   fix: "fix",
   docs: "update",
   style: "format",
-  refactor: "refactor",
+  refactor: "simplify",
   test: "update",
   chore: "update",
   perf: "optimize",
@@ -16,6 +16,7 @@ export const ID_ACTIONS = {
   update: "memperbarui",
   format: "merapikan",
   refactor: "merapikan",
+  simplify: "menyederhanakan",
   optimize: "mengoptimalkan"
 };
 

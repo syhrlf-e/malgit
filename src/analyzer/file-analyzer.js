@@ -2,7 +2,7 @@ import { createEmptyScores } from "../constants.js";
 import { detectScope } from "./scope-detector.js";
 
 const FIX_KEYWORDS = ["fix", "error", "bug", "validate", "validation", "catch", "fallback"];
-const FEAT_KEYWORDS = ["add", "create", "new", "implement", "register", "verify", "verification"];
+const FEAT_KEYWORDS = ["add", "create", "implement", "register", "verify", "verification"];
 const PERF_KEYWORDS = ["perf", "optimize", "cache", "memo", "lazy"];
 
 export function analyzeFile(fileChange, scopeMapping) {
@@ -15,6 +15,7 @@ export function analyzeFile(fileChange, scopeMapping) {
   applyKeywordScores(scores, addedText);
   applyRatioScores(scores, fileChange);
   applyStyleFallback(scores, fileChange);
+  applyCoreLogicFallback(scores, fileChange);
 
   return {
     path: fileChange.path,
@@ -34,26 +35,26 @@ function applyStatusScores(scores, status) {
 
 function applyPathScores(scores, path) {
   if (/(^|\/)(__tests__|tests?|spec)(\/|\.|-|_)/.test(path) || /\.(test|spec)\./.test(path)) {
-    scores.test += 4;
+    scores.test += 8;
   }
 
   if (path === "readme.md" || path.startsWith("docs/") || path.endsWith(".md")) {
-    scores.docs += 4;
+    scores.docs += 8;
   }
 
   if (path === "package.json") {
-    scores.chore += 4;
+    scores.chore += 8;
   }
 
   if (path.startsWith(".github/workflows/")) {
-    scores.ci += 4;
+    scores.ci += 8;
   }
 }
 
 function applyKeywordScores(scores, text) {
-  if (containsAny(text, FIX_KEYWORDS)) scores.fix += 2;
+  scores.fix += countMatches(text, FIX_KEYWORDS) * 3;
   if (containsAny(text, FEAT_KEYWORDS)) scores.feat += 2;
-  if (containsAny(text, PERF_KEYWORDS)) scores.perf += 2;
+  if (containsAny(text, PERF_KEYWORDS)) scores.perf += 8;
 }
 
 function applyRatioScores(scores, fileChange) {
@@ -69,7 +70,18 @@ function applyStyleFallback(scores, fileChange) {
   );
 
   if (!hasMeaningfulChanges || looksLikeStyleFile) {
-    scores.style += 3;
+    scores.style += 8;
+  }
+}
+
+function applyCoreLogicFallback(scores, fileChange) {
+  const path = fileChange.path.toLowerCase();
+  const hasMeaningfulChanges = fileChange.additions > 0 || fileChange.deletions > 0;
+  const hasScore = Object.values(scores).some((score) => score > 0);
+  const isCoreLogicFile = /src\/(analyzer|classifier|generator)\//.test(path);
+
+  if (hasMeaningfulChanges && !hasScore && isCoreLogicFile) {
+    scores.feat += 3;
   }
 }
 
@@ -77,8 +89,16 @@ function containsAny(text, keywords) {
   return keywords.some((keyword) => new RegExp(`\\b${keyword}\\b`, "i").test(text));
 }
 
+function countMatches(text, keywords) {
+  return keywords.filter((keyword) => new RegExp(`\\b${keyword}\\b`, "i").test(text)).length;
+}
+
 function normalizeSearchText(text) {
   return text
+    .replace(/\b[a-zA-Z_$][\w$]*\.(feat|fix|docs|style|refactor|test|chore|perf|ci)\b/g, " ")
+    .replace(/\b[A-Z]+_KEYWORDS\b/g, " ")
+    .replace(/\/(?:\\.|[^/\\\r\n])+\/[a-z]*/g, " ")
+    .replace(/(["'`])(?:\\.|(?!\1).)*\1/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ");
