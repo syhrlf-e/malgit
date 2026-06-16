@@ -387,3 +387,25 @@ test("classifies core commit analysis logic changes as feature", () => {
   assert.equal(classification.type, "feat");
   assert.equal(suggestion.message, "feat(generator): add commit message classification");
 });
+
+test("describes package publish fields as package metadata", () => {
+  const parsedDiff = {
+    files: [
+      {
+        path: "package.json",
+        status: "modified",
+        additions: 2,
+        deletions: 1,
+        addedLines: ['"malgit": "bin/malgit.js"', '"files": ["bin/", "src/", "README.md"]'],
+        removedLines: ['"malgit": "./bin/malgit.js"']
+      }
+    ]
+  };
+
+  const analysis = analyzeChanges(parsedDiff, DEFAULT_CONFIG);
+  const classification = classifyCommit(analysis);
+  const suggestion = generateMessage(classification, parsedDiff, "en");
+
+  assert.equal(classification.type, "chore");
+  assert.equal(suggestion.message, "chore: update package metadata");
+});
