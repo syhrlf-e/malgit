@@ -62,7 +62,7 @@ function detectTarget(type, parsedDiff) {
   }
 
   if (type === "chore" && files.some((file) => file.path.toLowerCase() === "package.json")) {
-    return "dependencies";
+    return detectPackageTarget(files);
   }
 
   if (type === "test" || files.every((file) => /\.(test|spec)\./.test(file.path.toLowerCase()))) {
@@ -142,6 +142,26 @@ function detectDocsTarget(files) {
 
   return "documentation";
 }
+
+function detectPackageTarget(files) {
+  const packageFiles = files.filter((file) => file.path.toLowerCase() === "package.json");
+  const tokens = collectTokens(packageFiles);
+
+  if (tokens.some((token) => ["dependencies", "devdependencies", "dependency"].includes(token))) {
+    return "dependencies";
+  }
+
+  if (tokens.some((token) => ["scripts", "test", "start", "dev", "lint"].includes(token))) {
+    return "package scripts";
+  }
+
+  if (tokens.some((token) => ["bin", "files", "exports", "main", "types"].includes(token))) {
+    return "package metadata";
+  }
+
+  return "package metadata";
+}
+
 
 function selectTargetFiles(type, files) {
   if (["feat", "fix", "perf", "refactor"].includes(type)) {

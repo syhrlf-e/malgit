@@ -16,6 +16,8 @@ const ID_TARGETS = {
   feature: "fitur",
   "installation guide": "panduan instalasi",
   issue: "masalah",
+  "package metadata": "metadata package",
+  "package scripts": "script package",
   "project files": "file proyek",
   "project maintenance": "pemeliharaan proyek",
   "project description": "deskripsi proyek",
